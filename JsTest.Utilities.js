@@ -40,6 +40,24 @@ JsTests.Fixture = (function () {
     
     JsTests.testFrame = testFrame = $(JsTests.Selectors.testFrame);
     
+    if (options.authenticated) {
+      JsTests.Account().login(function () {
+        if (testFrame.length === 0 || testFrame.attr("src").indexOf(JsTests.Host.name()) === -1 || testFrame[0].contentWindow.location.pathname !== path) {
+          bindFrameLoad(instantiateNewIframe(path), callback);
+        } else {
+          callback && callback();
+        }
+      });
+      return;
+    }
+    
+    if (options.authenticated !== undefined && options.authenticated === false) {
+      JsTests.Account().logout(function () {
+        bindFrameLoad(instantiateNewIframe(path), callback);
+      });
+      return;
+    }
+    
     if (testFrame.length === 0 || testFrame.attr("src").indexOf(JsTests.Host.name()) === -1 || testFrame[0].contentWindow.location.pathname !== path) {
       bindFrameLoad(instantiateNewIframe(path), callback);
     } else {
