@@ -29,6 +29,59 @@ JsTests.Host = (function () {
   };
 })();
 
+JsTests.Fixture = (function () {
+  if (!(this instanceof arguments.callee)) {
+    return new arguments.callee();
+  }
+  
+  var initialize = function (options) {
+    var callback = options.callback, testFrame,
+        path = options.path ? options.path : "";
+    
+    JsTests.testFrame = testFrame = $(JsTests.Selectors.testFrame);
+    
+    if (testFrame.length === 0 || testFrame.attr("src").indexOf(JsTests.Host.name()) === -1 || testFrame[0].contentWindow.location.pathname !== path) {
+      bindFrameLoad(instantiateNewIframe(path), callback);
+    } else {
+      callback && callback();
+    }
+  };
+  
+  var initialized = function () {
+    return JsTests.testFrame && JsTests.testFrame.contents && JsTests.testFrame.contents().find("div").length > 0;
+  };
+  
+  var namespace = function () {
+    return JsTests.testFrame[0].contentWindow;
+  };
+  
+  var instantiateNewIframe = function (path) {
+    $("#test-fixture").html("<iframe src='//" + JsTests.Host.name() + path + "' frameborder='0' width='100%' height='500'></iframe>");
+    return $("#test-fixture iframe");
+  };
+  
+  var bindFrameLoad = function (testFrame, callback) {
+    $(JsTests.Selectors.testFrame).one("load", function () {
+      JsTests.testFrame = $(JsTests.Selectors.testFrame);
+      var frameDocument = JsTests.testFrame[0].contentWindow.document;
+      $(frameDocument).ready(function () {
+        callback && callback();
+      });
+    });
+  };
+  
+  var content = function () {
+    return JsTests.testFrame.contents();
+  };
+  
+  return {
+    initialize: initialize,
+    initialized: initialized,
+    namespace: namespace,
+    content: content
+  };
+})();
+
 JsTests.waitFor = function (propertyName, scriptStateObject, callback) {
   var start = new Date().getTime(), intervalTime = 1;
   JsTests.Console.information("Waiting for " + propertyName + " in the jasmine IFrame namespace.");
@@ -41,7 +94,7 @@ JsTests.waitFor = function (propertyName, scriptStateObject, callback) {
   }, intervalTime);
 };
 
-JsTests.verbosity = 2; // 0 error, 1 warning, 2 information
+JsTests.verbosity = 1; // 0 error, 1 warning, 2 information
 JsTests.Console = (function () {
   if (!(this instanceof arguments.callee)) {
     return new arguments.callee();
@@ -68,9 +121,6 @@ JsTests.Console = (function () {
     error: error
   }
 })();
-
-JsTests.Utility = {
-};
 
 JsTests.Ajax = function () {
   if (!(this instanceof arguments.callee)) {
