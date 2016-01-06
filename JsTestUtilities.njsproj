@@ -12,7 +12,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>222222ec-03b1-4bd8-a67b-e3d65c4be354</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>JsTest.Utilities.js</StartupFile>
+    <StartupFile>src\JsTest.Utilities.js</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -30,8 +30,33 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="JsTest.Utilities.js" />
+    <Compile Include="dependencies\jquery.min.js" />
+    <Compile Include="src\JsTest.Utilities.Extensions.js" />
+    <Compile Include="src\JsTest.Utilities.js" />
+    <Compile Include="test\lib\jasmine-2.3.4\boot.js" />
+    <Compile Include="test\lib\jasmine-2.3.4\jasmine-html.js" />
+    <Compile Include="test\lib\jasmine-2.3.4\jasmine.js" />
+    <Compile Include="test\lib\jasmine-2.3.4\json2.js" />
+    <Compile Include="test\lib\jasmine-2.3.4\node_boot.js" />
+    <Compile Include="test\lib\phantom-jasmine\console-runner.js" />
+    <Compile Include="test\lib\phantom-jasmine\run-jasmine.js" />
+    <Compile Include="test\spec\JsTest.Utilities.Extensions.test.js" />
+    <Compile Include="dependencies\Shared.js" />
+    <Compile Include="test\spec\JsTest.Utilities.test.js" />
     <Content Include="README.md" />
+    <Content Include="test\AllTests.html" />
+    <Content Include="test\lib\jasmine-2.3.4\jasmine.css" />
+    <Content Include="test\lib\phantom-jasmine\run-jasmine.bak" />
+    <Content Include="test\lib\phantom-jasmine\run_jasmine_test.coffee" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="dependencies\" />
+    <Folder Include="test\" />
+    <Folder Include="src\" />
+    <Folder Include="test\lib\" />
+    <Folder Include="test\lib\jasmine-2.3.4\" />
+    <Folder Include="test\lib\phantom-jasmine\" />
+    <Folder Include="test\spec\" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />

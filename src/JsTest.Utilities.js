@@ -1,11 +1,12 @@
 ﻿/* ******************************
  * Author: James Speaker
- * Copyright 2016, iOnTech
+ * Copyright 2014-2016, iOnTech
  * james@iontech.org
  * *************************** */
 var JsTests = JsTests || {};
 
 JsTests.Selectors = {
+  testFrameContainer: "#test-fixture",
   testFrame: "#test-fixture iframe"
 };
 
@@ -43,7 +44,7 @@ JsTests.Fixture = (function () {
     if (options.authenticated) {
       JsTests.Account().login(function () {
         if (testFrame.length === 0 || testFrame.attr("src").indexOf(JsTests.Host.name()) === -1 || testFrame[0].contentWindow.location.pathname !== path) {
-          bindFrameLoad(instantiateNewIframe(path), callback);
+          JsTests.Frame().onLoad(instantiateNewIframe(path), callback);
         } else {
           callback && callback();
         }
@@ -53,13 +54,13 @@ JsTests.Fixture = (function () {
     
     if (options.authenticated !== undefined && options.authenticated === false) {
       JsTests.Account().logout(function () {
-        bindFrameLoad(instantiateNewIframe(path), callback);
+        JsTests.Frame().onLoad(instantiateNewIframe(path), callback);
       });
       return;
     }
     
     if (testFrame.length === 0 || testFrame.attr("src").indexOf(JsTests.Host.name()) === -1 || testFrame[0].contentWindow.location.pathname !== path) {
-      bindFrameLoad(instantiateNewIframe(path), callback);
+      JsTests.Frame().onLoad(instantiateNewIframe(path), callback);
     } else {
       callback && callback();
     }
@@ -70,26 +71,16 @@ JsTests.Fixture = (function () {
   };
   
   var namespace = function () {
-    return JsTests.testFrame[0].contentWindow;
+    return JsTests.testFrame && JsTests.testFrame.length > 0 ? JsTests.testFrame[0].contentWindow : window;
   };
   
   var instantiateNewIframe = function (path) {
-    $("#test-fixture").html("<iframe src='//" + JsTests.Host.name() + path + "' frameborder='0' width='100%' height='500'></iframe>");
-    return $("#test-fixture iframe");
-  };
-  
-  var bindFrameLoad = function (testFrame, callback) {
-    $(JsTests.Selectors.testFrame).one("load", function () {
-      JsTests.testFrame = $(JsTests.Selectors.testFrame);
-      var frameDocument = JsTests.testFrame[0].contentWindow.document;
-      $(frameDocument).ready(function () {
-        callback && callback();
-      });
-    });
+    $(JsTests.Selectors.testFrameContainer).html("<iframe src='//" + JsTests.Host.name() + path + "' frameborder='0' width='100%' height='500'></iframe>");
+    return $(JsTests.Selectors.testFrame);
   };
   
   var content = function () {
-    return JsTests.testFrame.contents();
+    return JsTests.testFrame && JsTests.testFrame.length > 0 ? JsTests.testFrame.contents() : null;
   };
   
   return {
@@ -99,6 +90,32 @@ JsTests.Fixture = (function () {
     content: content
   };
 })();
+
+JsTests.Frame = function () {
+  if (!(this instanceof arguments.callee)) {
+    return new arguments.callee();
+  }
+
+  var onLoad = function (testFrame, callback) {
+    $(JsTests.Selectors.testFrame).one("load", function () {
+      JsTests.testFrame = $(JsTests.Selectors.testFrame);
+      var frameDocument = JsTests.testFrame&& JsTests.testFrame.length > 0 ? JsTests.testFrame[0].contentWindow : null;
+      
+      if (!frameDocument) {
+        callback && callback();
+        return;
+      }
+
+      $(frameDocument).ready(function () {
+        callback && callback();
+      });
+    });
+  };
+
+  return {
+    onLoad: onLoad
+  };
+};
 
 JsTests.waitFor = function (propertyName, scriptStateObject, callback) {
   var start = new Date().getTime(), intervalTime = 1;
