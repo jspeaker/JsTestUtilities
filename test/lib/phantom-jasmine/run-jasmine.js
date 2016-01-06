@@ -13,7 +13,7 @@ var system = require('system');
  * @param timeOutMillis the max amount of time to wait. If not specified, 3 sec is used.
  */
 function waitFor(testFx, onReady, timeOutMillis) {
-  var maxtimeOutMillis = timeOutMillis ? timeOutMillis : 60001, //< Default Max Timeout is 3s
+  var maxtimeOutMillis = timeOutMillis ? timeOutMillis : 3001, //< Default Max Timeout is 3s
       start = new Date().getTime(),
       condition = false,
       interval = setInterval(function () {
@@ -47,17 +47,13 @@ page.onConsoleMessage = function (msg) {
   console.log(msg);
 };
 page.open(system.args[1], function (status) {
-  var i, passedElement
+  var i, passedElement;
   if (status !== "success") {
     console.log("Unable to access network");
     phantom.exit(1);
   } else {
     waitFor(function () {
       return page.evaluate(function () {
-        if (!window.api.fstmJasmineIsWaiting) {
-          console.log(window.api.status());
-          window.api.fstmJasmineIsWaiting = true;
-        }
         return window.api.status() === "done";
       });
     }, function () {
