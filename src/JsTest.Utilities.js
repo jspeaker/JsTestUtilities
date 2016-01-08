@@ -71,7 +71,7 @@ JsTests.Fixture = (function () {
   };
   
   var namespace = function () {
-    return JsTests.testFrame && JsTests.testFrame.length > 0 ? JsTests.testFrame[0].contentWindow : window;
+    return JsTests.testFrame && JsTests.testFrame.length > 0 ? JsTests.testFrame[0].contentWindow : null;
   };
   
   var instantiateNewIframe = function (path) {
