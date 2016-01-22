@@ -11,7 +11,7 @@ describe("Given JsTest.Utilities", function () {
     spyOn(JsTests, "Frame").and.returnValue(frameInstance);
     spyOn(frameInstance, "onLoad").and.callThrough();
     
-    spyOn(JsTestMock, "foo");
+    spyOn(JsTestMock, "fnToCallback");
   });
   
   describe("When calling JsTests.Host.name", function () {
@@ -29,13 +29,14 @@ describe("Given JsTest.Utilities", function () {
     beforeEach(function () {
       actual = JsTests.Fixture.initialize({
         authenticated: true,
-        callback: JsTestMock.foo
+        callback: JsTestMock.fnToCallback,
+        path: "/fixtures/index.html"
       });
     });
     
-    it("Then it should return a jQuery reference to a non-existent test frame", function () {
+    it("Then it should return a jQuery reference to a test frame", function () {
       expect(JsTests.testFrame).toBeTruthy();
-      expect(JsTests.testFrame.length).toBe(0);
+      expect(JsTests.testFrame.length).toBe(1);
     });
     
     it("Then it should call Account login", function () {
@@ -49,16 +50,24 @@ describe("Given JsTest.Utilities", function () {
     it("Then it should call the on load event handler for the frame", function () {
       expect(JsTests.Frame().onLoad).toHaveBeenCalled();
     });
+    
+    it("Then it should not call the callback", function () { // the file: protocol prevents frame access
+      expect(JsTestMock.fnToCallback).not.toHaveBeenCalled();
+    });
   });
   
   describe("When calling Fixture initialize with no authentication", function () {
     beforeEach(function () {
-      actual = JsTests.Fixture.initialize({ authenticated: false });
+      actual = JsTests.Fixture.initialize({
+        authenticated: false,
+        callback: JsTestMock.fnToCallback,
+        path: "/fixtures/index.html"
+      });
     });
     
-    it("Then it should return a jQuery reference to a non-existent test frame", function () {
+    it("Then it should return a jQuery reference to a test frame", function () {
       expect(JsTests.testFrame).toBeTruthy();
-      expect(JsTests.testFrame.length).toBe(0);
+      expect(JsTests.testFrame.length).toBe(1);
     });
     
     it("Then it should not call Account login", function () {
@@ -72,16 +81,23 @@ describe("Given JsTest.Utilities", function () {
     it("Then it should call the on load event handler for the frame", function () {
       expect(JsTests.Frame().onLoad).toHaveBeenCalled();
     });
+    
+    it("Then it should not call the callback", function () { // the file: protocol prevents frame access
+      expect(JsTestMock.fnToCallback).not.toHaveBeenCalled();
+    });
   });
   
   describe("When calling Fixture initialize with undefined authentication", function () {
     beforeEach(function () {
-      actual = JsTests.Fixture.initialize({});
+      actual = JsTests.Fixture.initialize({
+        callback: JsTestMock.fnToCallback,
+        path: "/fixtures/index.html"
+      });
     });
     
-    it("Then it should return a jQuery reference to a non-existent test frame", function () {
+    it("Then it should return a jQuery reference to a test frame", function () {
       expect(JsTests.testFrame).toBeTruthy();
-      expect(JsTests.testFrame.length).toBe(0);
+      expect(JsTests.testFrame.length).toBe(1);
     });
     
     it("Then it should not call Account login", function () {
@@ -94,6 +110,10 @@ describe("Given JsTest.Utilities", function () {
     
     it("Then it should call the on load event handler for the frame", function () {
       expect(JsTests.Frame().onLoad).toHaveBeenCalled();
+    });
+    
+    it("Then it should not call the callback", function () { // the file: protocol prevents frame access
+      expect(JsTestMock.fnToCallback).not.toHaveBeenCalled();
     });
   });
 

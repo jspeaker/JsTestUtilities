@@ -1,6 +1,6 @@
 
 var JsTestMock = {
-  foo: function () {
+  fnToCallback: function () {
     return;
   }
 };

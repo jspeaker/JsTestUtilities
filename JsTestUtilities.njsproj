@@ -40,9 +40,9 @@
     <Compile Include="test\lib\jasmine-2.3.4\node_boot.js" />
     <Compile Include="test\lib\phantom-jasmine\console-runner.js" />
     <Compile Include="test\lib\phantom-jasmine\run-jasmine.js" />
-    <Compile Include="test\spec\JsTest.Utilities.Extensions.test.js" />
     <Compile Include="dependencies\Shared.js" />
     <Compile Include="test\spec\JsTest.Utilities.test.js" />
+    <Content Include="test\fixtures\index.html" />
     <Content Include="README.md" />
     <Content Include="test\AllTests.html" />
     <Content Include="test\lib\jasmine-2.3.4\jasmine.css" />
@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="dependencies\" />
+    <Folder Include="test\fixtures\" />
     <Folder Include="test\" />
     <Folder Include="src\" />
     <Folder Include="test\lib\" />

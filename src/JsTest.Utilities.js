@@ -71,11 +71,17 @@ JsTests.Fixture = (function () {
   };
   
   var namespace = function () {
-    return JsTests.testFrame && JsTests.testFrame.length > 0 ? JsTests.testFrame[0].contentWindow : null;
+    return JsTests.testFrame && JsTests.testFrame.length > 0 && JsTests.testFrame[0].contentWindow ? JsTests.testFrame[0].contentWindow : window;
   };
   
   var instantiateNewIframe = function (path) {
-    $(JsTests.Selectors.testFrameContainer).html("<iframe src='//" + JsTests.Host.name() + path + "' frameborder='0' width='100%' height='500'></iframe>");
+    var fqPath;
+    if (window.location.protocol === "file:") {
+      fqPath = window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/")) + path;
+    } else {
+      fqPath = window.location.protocol + "//" + JsTests.Host.name() + path;
+    }
+    $(JsTests.Selectors.testFrameContainer).html("<iframe src='" + fqPath + "' frameborder='0' width='100%' height='500'></iframe>");
     return $(JsTests.Selectors.testFrame);
   };
   
@@ -97,15 +103,13 @@ JsTests.Frame = function () {
   }
 
   var onLoad = function (testFrame, callback) {
+    JsTests.testFrame = $(JsTests.Selectors.testFrame);
     $(JsTests.Selectors.testFrame).one("load", function () {
-      JsTests.testFrame = $(JsTests.Selectors.testFrame);
-      var frameDocument = JsTests.testFrame&& JsTests.testFrame.length > 0 ? JsTests.testFrame[0].contentWindow : null;
-      
+      var frameDocument = JsTests.testFrame && JsTests.testFrame.length > 0 ? JsTests.testFrame[0].contentWindow : null;
       if (!frameDocument) {
         callback && callback();
         return;
       }
-
       $(frameDocument).ready(function () {
         callback && callback();
       });
