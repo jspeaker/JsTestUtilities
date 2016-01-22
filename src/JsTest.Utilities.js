@@ -37,22 +37,36 @@ JsTests.Fixture = (function () {
   
   var initialize = function (options) {
     var callback = options.callback, testFrame,
-        path = options.path ? options.path : "";
+        path = options.path ? options.path : "",
+        framedAuthentication = JsTests.Configuration.framedAuthentication ? true : false;
     
     JsTests.testFrame = testFrame = $(JsTests.Selectors.testFrame);
     
     if (options.authenticated) {
-      JsTests.Account().login(function () {
-        if (testFrame.length === 0 || testFrame.attr("src").indexOf(JsTests.Host.name()) === -1 || testFrame[0].contentWindow.location.pathname !== path) {
-          JsTests.Frame().onLoad(instantiateNewIframe(path), callback);
+      if (testFrame.length === 0 || testFrame.attr("src").indexOf(JsTests.Host.name()) === -1 || testFrame[0].contentWindow.location.pathname !== path) {
+        if (framedAuthentication) {
+          JsTests.Account().login(function () {
+            JsTests.Frame().onLoad(instantiateNewIframe(path), callback);
+          });
         } else {
-          callback && callback();
+          JsTests.Frame().onLoad(instantiateNewIframe(path), function () {
+            JsTests.Account().login(callback);
+          });
         }
-      });
+      } else {
+        JsTests.Account().login(callback);
+      }
       return;
     }
     
     if (options.authenticated !== undefined && options.authenticated === false) {
+      if (framedAuthentication) {
+        JsTests.Frame().onLoad(instantiateNewIframe(path), function () {
+          JsTests.Account().logout(callback);
+        });
+        return;
+      }
+      
       JsTests.Account().logout(function () {
         JsTests.Frame().onLoad(instantiateNewIframe(path), callback);
       });
@@ -101,7 +115,7 @@ JsTests.Frame = function () {
   if (!(this instanceof arguments.callee)) {
     return new arguments.callee();
   }
-
+  
   var onLoad = function (testFrame, callback) {
     JsTests.testFrame = $(JsTests.Selectors.testFrame);
     $(JsTests.Selectors.testFrame).one("load", function () {
@@ -115,7 +129,7 @@ JsTests.Frame = function () {
       });
     });
   };
-
+  
   return {
     onLoad: onLoad
   };

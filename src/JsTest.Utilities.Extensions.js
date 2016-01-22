@@ -3,7 +3,11 @@
  * Copyright 2014-2016, iOnTech
  * james@iontech.org
  * *************************** */
-var JsTests = JsTests || {};
+var JsTests = JsTests || {
+  testFrame: null
+};
+
+JsTests.Configuration = {};
 
 JsTests.Spies = function () {
   if (!(this instanceof arguments.callee)) {
