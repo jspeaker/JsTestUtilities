@@ -73,8 +73,8 @@ describe("Given JsTest.Utilities", function () {
         expect(JsTests.testFrame.length).toBe(1);
       });
       
-      it("Then it should not call Account login", function () {
-        expect(JsTests.Account().login).not.toHaveBeenCalled();
+      it("Then it should call Account login", function () {
+        expect(JsTests.Account().login).toHaveBeenCalled();
       });
       
       it("Then it should not call Account logout", function () {

@@ -44,15 +44,9 @@ JsTests.Fixture = (function () {
     
     if (options.authenticated) {
       if (testFrame.length === 0 || testFrame.attr("src").indexOf(JsTests.Host.name()) === -1 || testFrame[0].contentWindow.location.pathname !== path) {
-        if (framedAuthentication) {
-          JsTests.Account().login(function () {
-            JsTests.Frame().onLoad(instantiateNewIframe(path), callback);
-          });
-        } else {
-          JsTests.Frame().onLoad(instantiateNewIframe(path), function () {
-            JsTests.Account().login(callback);
-          });
-        }
+        JsTests.Account().login(function () {
+          JsTests.Frame().onLoad(instantiateNewIframe(path), callback);
+        });
       } else {
         JsTests.Account().login(callback);
       }
@@ -147,7 +141,7 @@ JsTests.waitFor = function (propertyName, scriptStateObject, callback) {
   }, intervalTime);
 };
 
-JsTests.verbosity = 1; // 0 error, 1 warning, 2 information
+JsTests.verbosity = 2; // 0 error, 1 warning, 2 information
 JsTests.Console = (function () {
   if (!(this instanceof arguments.callee)) {
     return new arguments.callee();
