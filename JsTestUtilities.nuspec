@@ -14,6 +14,6 @@
     <tags>JavaScript Jasmine iFrame BDD</tags>
   </metadata>
   <files>
-	<file src="src\*" target="Content\scripts\" />
+	<file src="src\*" target="Content\JsTests\lib\" />
   </files>
 </package>
