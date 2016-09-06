@@ -42,6 +42,7 @@
     <Compile Include="test\lib\phantom-jasmine\run-jasmine.js" />
     <Compile Include="dependencies\Shared.js" />
     <Compile Include="test\spec\JsTest.Utilities.test.js" />
+    <Content Include="JsTestUtilities.nuspec" />
     <Content Include="test\fixtures\index.html" />
     <Content Include="README.md" />
     <Content Include="test\AllTests.html" />
@@ -58,6 +59,13 @@
     <Folder Include="test\lib\jasmine-2.3.4\" />
     <Folder Include="test\lib\phantom-jasmine\" />
     <Folder Include="test\spec\" />
+    <Folder Include="typings\" />
+    <Folder Include="typings\globals\" />
+    <Folder Include="typings\globals\node\" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="typings\globals\node\index.d.ts" />
+    <TypeScriptCompile Include="typings\index.d.ts" />
   </ItemGroup>
   <!-- Do not delete the following Import Project.  While this appears to do nothing it is a marker for setting TypeScript properties before our import that depends on them. -->
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="False" />
