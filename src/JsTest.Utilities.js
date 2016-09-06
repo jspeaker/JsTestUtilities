@@ -12,76 +12,31 @@ JsTests.Selectors = {
 
 JsTests.Host = (function () {
   var hostName;
-  
+
   var name = function () {
     if (hostName) {
       return hostName;
     }
-    
+
     hostName = location.search.getQueryValue("host");
     if (!hostName) {
       hostName = location.host;
     }
     return hostName;
   }
-  
+
   return {
     name: name
   };
 })();
 
 JsTests.Fixture = (function () {
+  // ReSharper disable CallerCalleeUsing
   if (!(this instanceof arguments.callee)) {
     return new arguments.callee();
   }
-  
-  var initialize = function (options) {
-    var callback = options.callback, testFrame,
-        path = options.path ? options.path : "",
-        framedAuthentication = JsTests.Configuration.framedAuthentication ? true : false;
-    
-    JsTests.testFrame = testFrame = $(JsTests.Selectors.testFrame);
-    
-    if (options.authenticated) {
-      if (testFrame.length === 0 || testFrame.attr("src").indexOf(JsTests.Host.name()) === -1 || testFrame[0].contentWindow.location.pathname !== path) {
-        JsTests.Account().login(function () {
-          JsTests.Frame().onLoad(instantiateNewIframe(path), callback);
-        });
-      } else {
-        JsTests.Account().login(callback);
-      }
-      return;
-    }
-    
-    if (options.authenticated !== undefined && options.authenticated === false) {
-      if (framedAuthentication) {
-        JsTests.Frame().onLoad(instantiateNewIframe(path), function () {
-          JsTests.Account().logout(callback);
-        });
-        return;
-      }
-      
-      JsTests.Account().logout(function () {
-        JsTests.Frame().onLoad(instantiateNewIframe(path), callback);
-      });
-      return;
-    }
-    
-    if (testFrame.length === 0 || testFrame.attr("src").indexOf(JsTests.Host.name()) === -1 || testFrame[0].contentWindow.location.pathname !== path) {
-      JsTests.Frame().onLoad(instantiateNewIframe(path), callback);
-    } else {
-      callback && callback();
-    }
-  };
-  
-  var initialized = function () {
-    return JsTests.testFrame && JsTests.testFrame.contents && JsTests.testFrame.contents().find("div").length > 0;
-  };
-  
-  var namespace = function () {
-    return JsTests.testFrame && JsTests.testFrame.length > 0 && JsTests.testFrame[0].contentWindow ? JsTests.testFrame[0].contentWindow : window;
-  };
-  
+  // ReSharper restore CallerCalleeUsing
+
   var instantiateNewIframe = function (path) {
     var fqPath;
     if (window.location.protocol === "file:") {
@@ -92,11 +47,58 @@ JsTests.Fixture = (function () {
     $(JsTests.Selectors.testFrameContainer).html("<iframe src='" + fqPath + "' frameborder='0' width='100%' height='500'></iframe>");
     return $(JsTests.Selectors.testFrame);
   };
-  
+
+  var initialize = function (options) {
+    var callback = options.callback, testFrame,
+      path = options.path ? options.path : "",
+      framedAuthentication = JsTests.Configuration.framedAuthentication ? true : false;
+
+    JsTests.testFrame = testFrame = $(JsTests.Selectors.testFrame);
+
+    if (options.authenticated) {
+      if (testFrame.length === 0 || testFrame.attr("src").indexOf(JsTests.Host.name()) === -1 || testFrame[0].contentWindow.location.pathname !== path) {
+        JsTests.Account().login(function () {
+          JsTests.Frame().onLoad(instantiateNewIframe(path), callback);
+        });
+      } else {
+        JsTests.Account().login(callback);
+      }
+      return;
+    }
+
+    if (options.authenticated !== undefined && options.authenticated === false) {
+      if (framedAuthentication) {
+        JsTests.Frame().onLoad(instantiateNewIframe(path), function () {
+          JsTests.Account().logout(callback);
+        });
+        return;
+      }
+
+      JsTests.Account().logout(function () {
+        JsTests.Frame().onLoad(instantiateNewIframe(path), callback);
+      });
+      return;
+    }
+
+    if (testFrame.length === 0 || testFrame.attr("src").indexOf(JsTests.Host.name()) === -1 || testFrame[0].contentWindow.location.pathname !== path) {
+      JsTests.Frame().onLoad(instantiateNewIframe(path), callback);
+    } else {
+      callback && callback();
+    }
+  };
+
+  var initialized = function () {
+    return JsTests.testFrame && JsTests.testFrame.contents && JsTests.testFrame.contents().find("div").length > 0;
+  };
+
+  var namespace = function () {
+    return JsTests.testFrame && JsTests.testFrame.length > 0 && JsTests.testFrame[0].contentWindow ? JsTests.testFrame[0].contentWindow : window;
+  };
+
   var content = function () {
     return JsTests.testFrame && JsTests.testFrame.length > 0 ? JsTests.testFrame.contents() : null;
   };
-  
+
   return {
     initialize: initialize,
     initialized: initialized,
@@ -106,10 +108,12 @@ JsTests.Fixture = (function () {
 })();
 
 JsTests.Frame = function () {
+  // ReSharper disable CallerCalleeUsing
   if (!(this instanceof arguments.callee)) {
     return new arguments.callee();
   }
-  
+  // ReSharper restore CallerCalleeUsing
+
   var onLoad = function (testFrame, callback) {
     JsTests.testFrame = $(JsTests.Selectors.testFrame);
     $(JsTests.Selectors.testFrame).one("load", function () {
@@ -123,7 +127,7 @@ JsTests.Frame = function () {
       });
     });
   };
-  
+
   return {
     onLoad: onLoad
   };
@@ -143,25 +147,27 @@ JsTests.waitFor = function (propertyName, scriptStateObject, callback) {
 
 JsTests.verbosity = 2; // 0 error, 1 warning, 2 information
 JsTests.Console = (function () {
+  // ReSharper disable CallerCalleeUsing
   if (!(this instanceof arguments.callee)) {
     return new arguments.callee();
   }
-  
+  // ReSharper restore CallerCalleeUsing
+
   var information = function (message) {
     if (JsTests.verbosity < 2) { return; }
     console.log(message);
   };
-  
+
   var warning = function (message) {
     if (JsTests.verbosity < 1) { return; }
     console.log(message);
   };
-  
+
   var error = function (message) {
     if (JsTests.verbosity < 0) { return; }
     console.log(message);
   };
-  
+
   return {
     information: information,
     warning: warning,
@@ -170,10 +176,23 @@ JsTests.Console = (function () {
 })();
 
 JsTests.Ajax = function () {
+  // ReSharper disable CallerCalleeUsing
   if (!(this instanceof arguments.callee)) {
     return new arguments.callee();
   }
-  
+  // ReSharper restore CallerCalleeUsing
+
+  var cleanInvalidDates = function (data) {
+    for (var prop in data) {
+      if (data.hasOwnProperty(prop)) {
+        if (data[prop] && data[prop].toString() === "Invalid Date") {
+          data[prop] = null;
+        }
+      }
+    }
+    return data;
+  };
+
   var submit = function (url, method, data, successHandler, errorHandler) {
     data = cleanInvalidDates(data);
     $.ajax(url, {
@@ -187,7 +206,7 @@ JsTests.Ajax = function () {
       error: errorHandler ? errorHandler : function () { }
     });
   };
-  
+
   var get = function (url, successHandler, errorHandler) {
     $.ajax(url, {
       async: true,
@@ -197,7 +216,7 @@ JsTests.Ajax = function () {
       error: errorHandler ? errorHandler : function () { }
     });
   };
-  
+
   var post = function (url, data, successHandler, errorHandler) {
     data = cleanInvalidDates(data);
     $.ajax(url, {
@@ -211,7 +230,7 @@ JsTests.Ajax = function () {
       error: errorHandler ? errorHandler : function () { }
     });
   };
-  
+
   var postJsonForHtml = function (url, data, successHandler, errorHandler) {
     data = cleanInvalidDates(data);
     $.ajax(url, {
@@ -225,16 +244,7 @@ JsTests.Ajax = function () {
       error: errorHandler ? errorHandler : function () { }
     });
   };
-  
-  var cleanInvalidDates = function (data) {
-    for (var prop in data) {
-      if (data[prop] && data[prop].toString() === "Invalid Date") {
-        data[prop] = null;
-      }
-    }
-    return data;
-  };
-  
+
   return {
     get: get,
     post: post,
@@ -248,6 +258,7 @@ JsTests.isFunction = function (theVariable) {
   return theVariable && getType.toString.call(theVariable) === "[object Function]";
 };
 
+// ReSharper disable NativeTypePrototypeExtending
 String.prototype.getQueryValue = function (key) {
   var i, kvp;
   var query = decodeURIComponent(this.replace("?", ""));
@@ -266,3 +277,4 @@ String.prototype.getHost = function () {
   a.href = this;
   return a.hostname;
 };
+// ReSharper restore NativeTypePrototypeExtending
