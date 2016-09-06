@@ -12,13 +12,13 @@
     <releaseNotes></releaseNotes>
     <copyright>Copyright 2016</copyright>
     <tags>JavaScript Jasmine iFrame BDD</tags>
+    <dependencies>
+      <dependency id="Jasmine" version="2.0" />
+      <dependency id="PhantomJS" version="2.0" />
+    </dependencies>
   </metadata>
   <files>
 	  <file src="src\*" target="Content\JsTests\lib\" />
 	  <file src="test\lib\phantom-jasmine\run-jasmine.js" target="Content\JsTests\lib\phantom-jasmine\" />
   </files>
-  <dependencies>
-    <dependency id="Jasmine" version="2.0" />
-    <dependency id="PhantomJS" version="2.0" />
-  </dependencies>
 </package>
