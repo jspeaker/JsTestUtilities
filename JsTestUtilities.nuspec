@@ -11,9 +11,9 @@
     <description>Jasmine test utilities library. This library enables running non-trivial BDD-style tests using an iFrame and properly traversing namespaces.</description>
     <releaseNotes></releaseNotes>
     <copyright>Copyright 2016</copyright>
-    <tags>Jasmine iFrame BDD</tags>
+    <tags>JavaScript Jasmine iFrame BDD</tags>
   </metadata>
   <files>
-	<file src="src\*" target="Content\scripts\*" />
+	<file src="src\*" target="Content\scripts\" />
   </files>
 </package>
