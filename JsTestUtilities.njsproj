@@ -43,6 +43,7 @@
     <Compile Include="dependencies\Shared.js" />
     <Compile Include="test\spec\JsTest.Utilities.test.js" />
     <Content Include="JsTestUtilities.nuspec" />
+    <Content Include="LICENSE.txt" />
     <Content Include="test\fixtures\index.html" />
     <Content Include="README.md" />
     <Content Include="test\AllTests.html" />

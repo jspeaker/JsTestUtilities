@@ -1,4 +1,4 @@
-Copyright (c) 2016 jIM Speaker
+Copyright (c) 2016 Jim Speaker
 
 MIT License
 

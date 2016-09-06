@@ -18,6 +18,7 @@
     </dependencies>
   </metadata>
   <files>
+	  <file src="LICENSE.txt" target="Content\LICENSE.txt" />
 	  <file src="src\*" target="Content\JsTests\lib\" />
 	  <file src="test\lib\phantom-jasmine\run-jasmine.js" target="Content\JsTests\lib\phantom-jasmine\" />
   </files>
