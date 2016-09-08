@@ -20,10 +20,10 @@
   </metadata>
   <files>
 	  <file src="LICENSE.txt" target="Content\JsTests\lib\LICENSE.txt" />
-	  <file src="src\lib\*" target="Content\JsTests\lib\" />
-	  <file src="src\spec\*" target="Content\JsTests\spec\" />
-	  <file src="src\SpecRunner.html" target="Content\JsTests\" />
-	  <file src="test\lib\phantom-jasmine\run-jasmine.js" target="Content\JsTests\lib\phantom-jasmine\" />
-	  <file src="test\lib\phantom-jasmine\console-runner.js" target="Content\JsTests\lib\phantom-jasmine\" />
+	  <file src="src\lib\*" target="Content\scripts\lib\" />
+	  <file src="src\spec\*" target="Content\scripts\spec\" />
+	  <file src="src\SpecRunner.html" target="Content\scripts\" />
+	  <file src="test\lib\phantom-jasmine\run-jasmine.js" target="Content\scripts\lib\phantom-jasmine\" />
+	  <file src="test\lib\phantom-jasmine\console-runner.js" target="Content\scripts\lib\phantom-jasmine\" />
   </files>
 </package>
