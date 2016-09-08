@@ -1,25 +1,3 @@
-/*
-Copyright (c) 2008-2015 Pivotal Labs
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-*/
 /**
  Starting with version 2.0, this file "boots" Jasmine, performing all of the necessary initialization before executing the loaded environment and all of a project's specs. This file should be loaded after `jasmine.js` and `jasmine_html.js`, but before any project source files or spec files are loaded. Thus this file can also be used to customize Jasmine for a project.
 
@@ -30,7 +8,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  [jasmine-gem]: http://github.com/pivotal/jasmine-gem
  */
 
-(function() {
+(function () {
 
   /**
    * ## Require &amp; Instantiate
@@ -68,7 +46,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    */
 
   var queryString = new jasmine.QueryString({
-    getWindowLocation: function() { return window.location; }
+    getWindowLocation: function () { return window.location; }
   });
 
   var catchingExceptions = queryString.getParam("catch");
@@ -83,12 +61,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    */
   var htmlReporter = new jasmine.HtmlReporter({
     env: env,
-    onRaiseExceptionsClick: function() { queryString.navigateWithNewParam("catch", !env.catchingExceptions()); },
-    onThrowExpectationsClick: function() { queryString.navigateWithNewParam("throwFailures", !env.throwingExpectationFailures()); },
-    addToExistingQueryString: function(key, value) { return queryString.fullStringWithNewParam(key, value); },
-    getContainer: function() { return document.body; },
-    createElement: function() { return document.createElement.apply(document, arguments); },
-    createTextNode: function() { return document.createTextNode.apply(document, arguments); },
+    onRaiseExceptionsClick: function () { queryString.navigateWithNewParam("catch", !env.catchingExceptions()); },
+    onThrowExpectationsClick: function () { queryString.navigateWithNewParam("throwFailures", !env.throwingExpectationFailures()); },
+    addToExistingQueryString: function (key, value) { return queryString.fullStringWithNewParam(key, value); },
+    getContainer: function () { return document.body; },
+    createElement: function () { return document.createElement.apply(document, arguments); },
+    createTextNode: function () { return document.createTextNode.apply(document, arguments); },
     timer: new jasmine.Timer()
   });
 
@@ -105,10 +83,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * Filter which specs will be run by matching the start of the full name against the `spec` query param.
    */
   var specFilter = new jasmine.HtmlSpecFilter({
-    filterString: function() { return queryString.getParam("spec"); }
+    filterString: function () { return queryString.getParam("spec"); }
   });
 
-  env.specFilter = function(spec) {
+  env.specFilter = function (spec) {
     return specFilter.matches(spec.getFullName());
   };
 
@@ -127,7 +105,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    */
   var currentWindowOnload = window.onload;
 
-  window.onload = function() {
+  window.onload = function () {
     if (currentWindowOnload) {
       currentWindowOnload();
     }
@@ -139,8 +117,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
    * Helper function for readability above.
    */
   function extend(destination, source) {
-    for (var property in source) destination[property] = source[property];
+    for (var property in source) {
+      if (source.hasOwnProperty(property)) {
+        destination[property] = source[property];
+      }
+    }
     return destination;
   }
 
-}());
+} ());
