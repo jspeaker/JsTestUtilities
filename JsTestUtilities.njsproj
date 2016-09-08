@@ -31,6 +31,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="dependencies\jquery.min.js" />
+    <Compile Include="src\jasmine-tweak\boot.js" />
     <Compile Include="src\lib\JsTest.Utilities.Extensions.js" />
     <Compile Include="src\lib\JsTest.Utilities.js" />
     <Compile Include="test\lib\jasmine-2.3.4\boot.js" />
@@ -56,6 +57,7 @@
   <ItemGroup>
     <Folder Include="dependencies\" />
     <Folder Include="src\lib\" />
+    <Folder Include="src\jasmine-tweak\" />
     <Folder Include="src\spec\" />
     <Folder Include="test\fixtures\" />
     <Folder Include="test\" />
