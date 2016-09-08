@@ -23,6 +23,7 @@
 	  <file src="LICENSE.txt" target="Content\scripts\lib\LICENSE.txt" />
 	  <file src="src\lib\*" target="Content\scripts\lib\" />
 	  <file src="src\spec\*" target="Content\scripts\spec\" />
+    <file src="src\jasmine-tweak\*" target="Content\scripts\jasmine-tweak" />
 	  <file src="src\SpecRunner.html" target="Content\" />
 	  <file src="test\lib\phantom-jasmine\run-jasmine.js" target="Content\scripts\lib\phantom-jasmine\" />
 	  <file src="test\lib\phantom-jasmine\console-runner.js" target="Content\scripts\lib\phantom-jasmine\" />
