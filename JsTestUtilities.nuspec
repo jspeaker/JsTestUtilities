@@ -8,12 +8,12 @@
     <projectUrl>http://www.iontech.org</projectUrl>
     <iconUrl>http://www.iontech.org/favicon.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Jasmine test utilities library. This library enables running non-trivial BDD-style tests using an iFrame. The library solves the 'fixtures' problem, i.e.
+    <description>Jasmine test utilities library. This library enables running non-trivial tests using an iFrame. The library solves the 'fixtures' problem, i.e.
       fixtures in Jasmine are a fixed-in-time representation of a UI or UI control, and can produce false positives when the dynamic UI elements have changed.
       The library provides a means of addressing numerous issues, e.g. properly traversing the test vs. iframe namespace, handling async script loading, async event handling, etc.</description>
     <releaseNotes></releaseNotes>
     <copyright>Copyright 2016</copyright>
-    <tags>JavaScript Jasmine iFrame BDD</tags>
+    <tags>javascript jasmine phantomjs iframe bdd tdd async web ui test</tags>
     <dependencies>
       <dependency id="Jasmine" version="2.0" />
     </dependencies>

@@ -65,7 +65,7 @@ JsTestUtilities Nuget package has a dependency on Jasmine. The boot.js file that
 > phantomjs://webpage.evaluate():3   
 > TypeError: 'undefined' is not an object (evaluating 'window.api.status')
 
-I have included a file called "boot-tweak.js" that you can use to replace the boot.js file if you experience the above problem. It simply adds two lines of js that instantiate the `window.api` object.
+I have included a file in a "jasmine-tweak" directory called "boot.js" that you can use to replace the boot.js file if you experience the above problem. It simply adds two lines of js that instantiate the `window.api` object.
 
 ### Adding Your First Test ###
 In its most basic form, the JsTestUtilities library is very simple and gives you the ability to test your UI with a minimum of fuss. Start by adding a .js file to your spec directory. You might call it something like, home_test.js. Add the following code example which shows a simple test written for a website's home page. Something like this might make a decent, albeit simple, smoke test in a continuous deployment (CD) scenario:
