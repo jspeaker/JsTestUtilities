@@ -1,4 +1,4 @@
-# [JsTestUtilities](https://www.nuget.org/packages/iOnTech.JsTestUtilities/) #
+# [iOnTech.JsTestUtilities](https://www.nuget.org/packages/iOnTech.JsTestUtilities/) #
 
 JsTestUtilities is a library by [iOnTech](http://www.iontech.org) (Jim Speaker) that allows running a web application in an iFrame while Jasmine runs in the main window and exercises both integration and unit tests against the actual web application. This provides a solution to a number of different problems with testing web user interfaces with [Jasmine](http://jasmine.github.io/2.0/introduction.html). This solution, as stated, is to allow Jasmine to be used for both unit tests and full integration tests, as well as more basic UI tests. In my opinion, it's ability to fully test a web application from the UI level while properly handling the asynchronous nature of modern web applications (e.g. Ajax) renders [Selenium](http://www.seleniumhq.org/) obsolete. 
 
@@ -253,11 +253,13 @@ How does `JsTests.Account().login()` get called? The answer is: simply by adding
 
 The object `JsTests.Account()` can also be referenced anywhere in your Jasmine test code in order to call `login` or `logout` as needed. I've found that when I have a Given (see [Gherkin language](https://github.com/cucumber/cucumber/wiki/Gherkin "Gherkin")) that states that the user is authenticated, I simply instantiate the iFrame with `authenticated: true`, however, and never end up calling it directly.
 
-## Asynchronous Calls / Asynchronous Script Loading ##
+## Asynchronous Operations / Asynchronous Script Loading ##
 One of the biggest gotchas with testing web application user interfaces is asynchronous calls and the need to wait for async scripts to load. Both situations can be addressed in the same way. Let's talk about the latter first.
 
 
 ### Asynchronous Script Loading ###
+
+There are, of course, many situations where scripts are loaded asynchronously to improve page load times, among other things.
 
 Let's take as an example a web application that is multilingual and uses the jQuery Globalization plug-in. The Globalization library, as a whole, is *huge*. Thus, the model is that when a page is initializing it only loads the necessary portions of the library based on the current culture. This is all done async, of course, to prevent blocking execution. 
 
@@ -301,7 +303,7 @@ In my event handling bootstrapper for the application I have an event handler se
       MyApplication.ScriptState.globalization = true;
     });
 
-*While it could easily be argued that this is muddying up my production code with test code, tracking the state of asynchronous script loading, like this, is actually very useful to my application and is used by the production code.*
+*It could easily be argued that this is muddying up my production code with test code. Tracking the state of asynchronous script loading like this is actually very useful to my application and is used by the production code.*
 
 By setting this `ScriptState` object, the test code now has something that it can examine and `waitFor` the asynchronous completion before executing tests. Also, notice that the Jasmine `done` callback is simply being handed to the `waitFor` method as a callback:
 
@@ -317,11 +319,91 @@ By setting this `ScriptState` object, the test code now has something that it ca
         });
       });
 
-### Asynchronous Script Loading ###
+### Asynchronous Operations ###
+
+Asynchronous Operations are typically Ajax calls in a modern web application. So, for purposes of documentation, I'll focus solely on Ajax.
+
+In the same way that we triggered a custom event in the case of asynchronous script loading, we can trigger a custom event in the case of an Ajax call completion. We'll take as an example an application that allows the user to manage alerts, so the user interface allows the user to do the usual CRUD operations. We'll look at the create operation which is implemented via an Ajax call. Within the submit handler script for the create call we'll simply set the `MyApplication.ScriptState.alertsLoaded` boolean to false before we make the call, in case it's been called previously, then make the Ajax call and set the boolean to true when it completes:
+	
+	MyApplication.ScriptState.alertsLoaded = false;
+	
+	$.ajax("/alert/create", {
+	  async: true,
+	  cache: false,
+	  type: "POST",
+	  contentType: "application/json; utf-8",
+	  dataType: "json",
+	  data: JSON.stringify(data),
+	  success: function (result) {
+			$(document).trigger("alerts-loaded", [result]);
+		},
+	  error: function (xhr) {
+			// handle error
+		}
+	});
+
+And, in your event handling bootstrapper set up an event handler for the custom event `alerts-loaded`:
+
+	var handleAlertsLoaded = function (e, result) {
+		// do stuff with the result data that your application needs to do
+		// and set the alertsLoaded boolean to true
+		MyApplication.ScriptState.alertsLoaded = true;
+	};
+	$(document).on("alerts-loaded", handleAlertsLoaded);
+
+
+*Again, it can easily be argued that this is muddying up my production code with test code. Tracking the state of asynchronous operations like this is actually very useful to my application and is used by the production code.*
 
 
 ## Other Tips and Tricks ##
 
+### More Fun with Async ###
+
+`JsTests.waitFor` is a simple function that is available to you in your tests whenever you need to wait for something to complete before proceeding. The function takes three parameters: the `propertyName` (string), the `scriptStateObject` (object), and the `callback` (function). The specified property of the `scriptStateObject` is evaluated for truthiness until it is truthy, at which point the callback is executed. The `scriptStateObject[propertyName]` can exist in either the iFrame namespace, which is what this was designed for, or if you find it useful could certainly also be in the main window namespace. Just be sure to reference the iFrame namespace if that is your intent. And, remember, the real awesomeness in Jasmine is the native `done` function that signals Jasmine that async stuff has completed and it's okay to continue processing.
+
+	beforeEach(function (done) {
+		var ns = JsTests.Fixture.namespace();
+	
+		JsTests.waitFor('fooProperty', ns.MyApplication.BazObject, function (done) { 
+			doAllTheThings();
+			done();
+		});
+	});
+
+### Console Logging ###
+
+JsTest.Utilities.js contains a `JsTests.verbosity` property which is set to 2 (information) by default. This property is used JsTestUtilities to determine how verbosely to write to the JavaScript console. Feel free to set it to 0 (errors only), 1 (errors and warnings) or 2 (errors, warnings and information) as you see fit. 
+
+`JsTests.Console` can be used within your tests, as well, and is useful for outputting information to the console while having control over the verbosity of it. It's just a simple singleton (self-instantiating) wrapper object that exposes three methods:
+
+	JsTests.Console.information(message)
+	JsTests.Console.warning(message)
+	JsTests.Console.error(message)
+
+Of course, the tests should only be run in lower environments, and only logs to the console in the context of test runs, so the verbosity doesn't have any impact on your application.
+
+### Ajax Wrapper ###
+
+Inevitably it may arise that you need to make an Ajax call or two from within your tests. It's sad, but it's true. In general you should make every effort to use script to click buttons, dropdown lists, focus elements, etc, in order to ensure that your application does all the things correctly to execute those calls. However, for those rare situations where it is actually necessary, a wrapper object has been provided in JsTest.Utilities.
+
+`JsTests.Ajax` is an instance object that exposes four methods (functions):
+
+The `get` method executes a standard jQuery Ajax GET to a URL you specify, specifies **JSON** as the result content type, and supports callback parameters for your success handler and error handler callbacks.
+
+	JsTests.Ajax().get(url, successHandler, errorHandler)
+
+The `post` method executes a standard jQuery Ajax POST to a URL you specify using your supplied JSON data, specifies **JSON** as the result content type, and supports callback parameters for your success handler and error handler callbacks.
+
+	JsTests.Ajax().post(url, data, successHandler, errorHandler)
+
+
+The `submit` method is much like the `post` method, except that it requires an additional `method` parameter that makes it flexible in that it can excercise any of the standard HTTP methods `["GET" | "POST" | "PUT" | "DELETE" ]` The method then executes a standard jQuery Ajax call with your specified method to a URL you specify using your supplied JSON data, specifies **JSON** as the result content type, and supports callback parameters for your success handler and error handler callbacks.
+
+	JsTests.Ajax().submit(url, method, data, successHandler, errorHandler)
+
+The `postJsonForHtml` method executes a standard jQuery Ajax POST to a URL you specify using your supplied JSON data, specifies **HTML** as the result content type, and supports callback parameters for your success handler and error handler callbacks.
+
+	JsTests.Ajax().postJsonForHtml(url, data, successHandler, errorHandler)
 
 ## References ##
 
