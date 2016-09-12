@@ -5,7 +5,7 @@
     <version>0.0.0.0</version>
     <authors>Jim Speaker</authors>
     <owners>iOnTech</owners>
-    <projectUrl>http://www.iontech.org</projectUrl>
+    <projectUrl>http://local.iontech.org/Projects#js-test-utilities</projectUrl>
     <iconUrl>http://www.iontech.org/favicon.png</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Jasmine test utilities library. This library enables running non-trivial tests using an iFrame. The library solves the 'fixtures' problem, i.e.
