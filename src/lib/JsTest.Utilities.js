@@ -159,16 +159,34 @@ JsTests.Frame = function () {
 };
 
 JsTests.waitFor = function (propertyName, scriptStateObject, callback) {
-  var start = new Date().getTime(), intervalTime = 1;
-  JsTests.Console.information("Waiting for " + propertyName + " in the jasmine IFrame namespace.");
-  var interval = setInterval(function () {
-    if (scriptStateObject[propertyName]) {
-      JsTests.Console.information("waitFor(" + propertyName + ") completed in " + (new Date().getTime() - start) + "ms.");
-      clearInterval(interval);
-      callback && callback();
-    }
-  }, intervalTime);
+  JsTests.Wait().until(propertyName, scriptStateObject, true, callback);
 };
+
+JsTests.waitForNot = function (propertyName, scriptStateObject, callback) {
+  JsTests.Wait().until(propertyName, scriptStateObject, false, callback);
+};
+
+JsTests.Wait = (function () {
+  if (!(this instanceof arguments.callee)) {
+    return new arguments.callee();
+  }
+
+  var until = function (propertyName, scriptStateObject, condition, callback) {
+    var start = new Date().getTime(), intervalTime = 1;
+    JsTests.Console.information("Waiting for " + propertyName + " in the jasmine IFrame namespace.");
+    var interval = setInterval(function () {
+      if (scriptStateObject[propertyName] === condition) {
+        JsTests.Console.information("waitFor(" + propertyName + ") completed in " + (new Date().getTime() - start) + "ms.");
+        clearInterval(interval);
+        callback && callback();
+      }
+    }, intervalTime);
+  };
+
+  return {
+    until: until
+  };
+});
 
 JsTests.verbosity = 2; // 0 error, 1 warning, 2 information
 JsTests.Console = (function () {
