@@ -62,51 +62,20 @@ JsTests.Fixture = (function () {
   }
   // ReSharper restore CallerCalleeUsing
 
-  var instantiateNewIframe = function (path) {
-    var fqPath;
-    if (window.location.protocol === "file:") {
-      fqPath = window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/")) + path;
-    } else {
-      fqPath = window.location.protocol + "//" + JsTests.Host.name() + path;
-    }
-    $(JsTests.Selectors.testFrameContainer).html("<iframe src='" + fqPath + "' frameborder='0' width='100%' height='500'></iframe>");
-    return $(JsTests.Selectors.testFrame);
-  };
-
   var initialize = function (options) {
-    var callback = options.callback, testFrame,
-      path = options.path ? options.path : "",
-      framedAuthentication = JsTests.Configuration.framedAuthentication ? true : false;
+    var callback = options.callback,
+      path = options.path ? options.path : "";
 
-    JsTests.testFrame = testFrame = $(JsTests.Selectors.testFrame);
+    JsTests.testFrame = $(JsTests.Selectors.testFrame);
 
-    if (options.authenticated) {
-      if (testFrame.length === 0 || testFrame.attr("src").indexOf(JsTests.Host.name()) === -1 || testFrame[0].contentWindow.location.pathname !== path) {
-        JsTests.Account().login(function () {
-          JsTests.Frame().onLoad(instantiateNewIframe(path), callback);
-        });
-      } else {
-        JsTests.Account().login(callback);
-      }
-      return;
-    }
+    var authentication = new JsTests.Authentication(options.authenticated, path);
+    authentication.init(callback);
 
-    if (options.authenticated !== undefined && options.authenticated === false) {
-      if (framedAuthentication) {
-        JsTests.Frame().onLoad(instantiateNewIframe(path), function () {
-          JsTests.Account().logout(callback);
-        });
-        return;
-      }
-
-      JsTests.Account().logout(function () {
-        JsTests.Frame().onLoad(instantiateNewIframe(path), callback);
-      });
-      return;
-    }
-
-    if (testFrame.length === 0 || testFrame.attr("src").indexOf(JsTests.Host.name()) === -1 || testFrame[0].contentWindow.location.pathname !== path) {
-      JsTests.Frame().onLoad(instantiateNewIframe(path), callback);
+    if (JsTests.testFrame.length === 0 ||
+      JsTests.testFrame.attr("src").indexOf(JsTests.Host.name()) === -1 ||
+      JsTests.testFrame[0].contentWindow.location.pathname !== path) {
+      var frame = new JsTests.Frame();
+      JsTests.Frame().onLoad(frame.initialize(path), callback);
     } else {
       callback && callback();
     }
@@ -132,6 +101,57 @@ JsTests.Fixture = (function () {
   };
 })();
 
+JsTests.Authentication = function (authenticated, path) {
+  // ReSharper disable CallerCalleeUsing
+  if (!(this instanceof arguments.callee)) {
+    return new arguments.callee(authenticated, path);
+  }
+  // ReSharper restore CallerCalleeUsing
+
+  this.authenticated = authenticated;
+  this.path = path;
+
+  var requestedFrameExists = function () {
+    return !(JsTests.testFrame.length === 0 ||
+      JsTests.testFrame.attr("src").indexOf(JsTests.Host.name()) === -1 ||
+      JsTests.testFrame[0].contentWindow.location.pathname !== path);
+  };
+
+  var init = function (callback) {
+    var framedAuthentication = JsTests.Configuration.framedAuthentication ? true : false;
+    var frame = new JsTests.Frame();
+
+    if (authenticated) {
+      if (!requestedFrameExists()) {
+        JsTests.Account().login(function () {
+          JsTests.Frame().onLoad(frame.initialize(path), callback);
+        });
+      } else {
+        JsTests.Account().login(callback);
+      }
+      return;
+    }
+
+    if (authenticated !== undefined && authenticated === false) {
+      if (framedAuthentication) {
+        JsTests.Frame().onLoad(frame.initialize(path), function () {
+          JsTests.Account().logout(callback);
+        });
+        return;
+      }
+
+      JsTests.Account().logout(function () {
+        JsTests.Frame().onLoad(frame.initialize(path), callback);
+      });
+      return;
+    }
+  };
+
+  return {
+    init: init
+  };
+};
+
 JsTests.Frame = function () {
   // ReSharper disable CallerCalleeUsing
   if (!(this instanceof arguments.callee)) {
@@ -153,8 +173,17 @@ JsTests.Frame = function () {
     });
   };
 
+  var initialize = function (path) {
+    var pathUtility = new JsTests.PathUtilityFactory(path).create();
+    var fqPath = pathUtility.fullyQualified();
+
+    $(JsTests.Selectors.testFrameContainer).html("<iframe src='" + fqPath + "' frameborder='0' width='100%' height='500'></iframe>");
+    return $(JsTests.Selectors.testFrame);
+  };
+
   return {
-    onLoad: onLoad
+    onLoad: onLoad,
+    initialize: initialize
   };
 };
 
@@ -227,10 +256,8 @@ JsTests.Ajax = function () {
 
   var cleanInvalidDates = function (data) {
     for (var prop in data) {
-      if (data.hasOwnProperty(prop)) {
-        if (data[prop] && data[prop].toString() === "Invalid Date") {
-          data[prop] = null;
-        }
+      if (data.hasOwnProperty(prop) && data[prop] && data[prop].toString() === "Invalid Date") {
+        data[prop] = null;
       }
     }
     return data;
@@ -293,6 +320,64 @@ JsTests.Ajax = function () {
     post: post,
     submit: submit,
     postJsonForHtml: postJsonForHtml
+  };
+};
+
+JsTests.PathUtilityFactory = function (path) {
+  // ReSharper disable CallerCalleeUsing
+  if (!(this instanceof arguments.callee)) {
+    return new arguments.callee(path);
+  }
+  // ReSharper restore CallerCalleeUsing
+
+  this.path = path;
+
+  var create = function () {
+    if (window.location.protocol.indexOf("http") === 0) return new JsTests.UrlPathUtlility(path);
+
+    if (window.location.protocol.indexOf("file") === 0) return new JsTests.FilePathUtility(path);
+
+    throw new Error("PathUtilityFactory could not resolve strategy.");
+  };
+
+  return {
+    create: create
+  };
+};
+
+JsTests.UrlPathUtlility = function (path) {
+  // ReSharper disable CallerCalleeUsing
+  if (!(this instanceof arguments.callee)) {
+    return new arguments.callee(path);
+  }
+  // ReSharper restore CallerCalleeUsing
+
+  this.path = path;
+
+  var fullyQualified = function () {
+    return window.location.protocol + "//" + JsTests.Host.name() + path;
+  };
+
+  return {
+    fullyQualified: fullyQualified
+  };
+};
+
+JsTests.FilePathUtility = function (path) {
+  // ReSharper disable CallerCalleeUsing
+  if (!(this instanceof arguments.callee)) {
+    return new arguments.callee(path);
+  }
+  // ReSharper restore CallerCalleeUsing
+
+  this.path = path;
+
+  var fullyQualified = function () {
+    return window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/")) + path;
+  };
+
+  return {
+    fullyQualified: fullyQualified
   };
 };
 
