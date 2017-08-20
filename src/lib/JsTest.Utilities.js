@@ -1,7 +1,7 @@
 ﻿/* ******************************
 Author: Jim Speaker
 Copyright 2014-2017, iOnTech
-james@iontech.org
+jim@iontech.org
 
 Copyright (c) 2014-2017 Jim Speaker
 
@@ -47,16 +47,16 @@ JsTests.Fixture = (function () {
       JsTests.testFrame.attr("src").indexOf(JsTests.Host.name()) > -1 &&
       JsTests.testFrame[0].contentWindow.location.pathname === path) return false;
 
-    var frame = new JsTests.Frame();
-    JsTests.Frame().onLoad(frame.initialize(path), callback);
+    var frame = new JsTests.Frame(path);
+    frame.onLoad(callback);
     return true;
   };
 
-  var setReferenceToTestFrame = function() {
+  var setReferenceToTestFrame = function () {
     JsTests.testFrame = $(JsTests.Selectors.testFrame);
   };
 
-  var setAuthenticationState = function(authenticated, path, callback) {
+  var setAuthenticationState = function (authenticated, path, callback) {
     JsTests.Authentication(authenticated, path).init(callback);
   };
 
@@ -110,6 +110,12 @@ JsTests.Authentication = function (authenticated, path) {
       JsTests.testFrame[0].contentWindow.location.pathname !== path);
   };
 
+  var testFrame = function () {
+    var frame = new JsTests.Frame(self.path);
+    frame.initialize();
+    return frame;
+  };
+
   var tryLoginExistingFrame = function (callback) {
     if (!self.authenticated || !requestedFrameExists()) return false;
 
@@ -120,9 +126,8 @@ JsTests.Authentication = function (authenticated, path) {
   var tryLoginNonExistentFrame = function (callback) {
     if (!self.authenticated || requestedFrameExists()) return false;
 
-    var frame = new JsTests.Frame();
     JsTests.Account().login(function () {
-      JsTests.Frame().onLoad(frame.initialize(self.path), callback);
+      testFrame().onLoad(callback);
     });
     return true;
   };
@@ -131,8 +136,7 @@ JsTests.Authentication = function (authenticated, path) {
     var framedAuthentication = JsTests.Configuration.framedAuthentication ? true : false;
     if (self.authenticated === undefined || self.authenticated === true || !framedAuthentication) return false;
 
-    var frame = new JsTests.Frame();
-    JsTests.Frame().onLoad(frame.initialize(path), function () {
+    testFrame().onLoad(function () {
       JsTests.Account().logout(callback);
     });
     return true;
@@ -141,9 +145,8 @@ JsTests.Authentication = function (authenticated, path) {
   var tryLogout = function (callback) {
     if (self.authenticated === undefined || self.authenticated === true) return false;
 
-    var frame = new JsTests.Frame();
     JsTests.Account().logout(function () {
-      JsTests.Frame().onLoad(frame.initialize(path), callback);
+      testFrame().onLoad(callback);
     });
     return true;
   };
@@ -163,12 +166,23 @@ JsTests.Authentication = function (authenticated, path) {
   };
 };
 
-JsTests.Frame = function () {
+JsTests.Frame = function (path) {
   // ReSharper disable CallerCalleeUsing
   if (!(this instanceof arguments.callee)) {
-    return new arguments.callee();
+    return new arguments.callee(path);
   }
   // ReSharper restore CallerCalleeUsing
+
+  var self = this;
+  this.path = path;
+
+  var initialize = function () {
+    var pathUtility = new JsTests.PathUtilityFactory(self.path).create();
+    var fqPath = pathUtility.fullyQualified();
+
+    $(JsTests.Selectors.testFrameContainer).html("<iframe src='" + fqPath + "' frameborder='0' width='100%' height='500'></iframe>");
+    return $(JsTests.Selectors.testFrame);
+  };
 
   var tryGetFrameContentWindow = function () {
     if (!JsTests.testFrame || JsTests.testFrame.length === 0) return false;
@@ -186,21 +200,13 @@ JsTests.Frame = function () {
     return true;
   };
 
-  var onLoad = function (testFrame, callback) {
+  var onLoad = function (callback) {
     JsTests.testFrame = $(JsTests.Selectors.testFrame);
     $(JsTests.Selectors.testFrame).one("load", function () {
       if (tryBindingFrameContentWindowReady(callback)) return;
 
       callback && callback();
     });
-  };
-
-  var initialize = function (path) {
-    var pathUtility = new JsTests.PathUtilityFactory(path).create();
-    var fqPath = pathUtility.fullyQualified();
-
-    $(JsTests.Selectors.testFrameContainer).html("<iframe src='" + fqPath + "' frameborder='0' width='100%' height='500'></iframe>");
-    return $(JsTests.Selectors.testFrame);
   };
 
   return {

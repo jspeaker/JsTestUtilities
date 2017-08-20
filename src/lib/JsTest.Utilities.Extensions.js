@@ -1,9 +1,9 @@
 ﻿/* ******************************
-Author: James Speaker
-Copyright 2014-2016, iOnTech
-james@iontech.org
+Author: Jim Speaker
+Copyright 2014-2017, iOnTech
+jim@iontech.org
 
-Copyright (c) 2016 Jim Speaker
+Copyright (c) 2014-2017 Jim Speaker
 
 MIT License
 
