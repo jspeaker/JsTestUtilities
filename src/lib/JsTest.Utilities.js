@@ -158,19 +158,28 @@ JsTests.Frame = function () {
   }
   // ReSharper restore CallerCalleeUsing
 
+  var tryGetFrameContentWindow = function () {
+    if (!JsTests.testFrame || JsTests.testFrame.length === 0) return false;
+
+    return JsTests.testFrame[0].contentWindow;
+  };
+
+  var tryBindingFrameContentWindowReady = function (callback) {
+    var frameContentWindow = tryGetFrameContentWindow();
+    if (!frameContentWindow) return false;
+
+    $(frameContentWindow).ready(function () {
+      callback && callback();
+    });
+    return true;
+  };
+
   var onLoad = function (testFrame, callback) {
     JsTests.testFrame = $(JsTests.Selectors.testFrame);
     $(JsTests.Selectors.testFrame).one("load", function () {
-      var frameDocument = JsTests.testFrame && JsTests.testFrame.length > 0 ? JsTests.testFrame[0].contentWindow : null;
+      if (tryBindingFrameContentWindowReady(callback)) return;
 
-      if (!frameDocument) {
-        callback && callback();
-        return;
-      }
-
-      $(frameDocument).ready(function () {
-        callback && callback();
-      });
+      callback && callback();
     });
   };
 
