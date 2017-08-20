@@ -42,23 +42,35 @@ JsTests.Fixture = (function () {
   }
   // ReSharper restore CallerCalleeUsing
 
+  var tryBindingFrameOnLoad = function (path, callback) {
+    if (JsTests.testFrame.length > 0 &&
+      JsTests.testFrame.attr("src").indexOf(JsTests.Host.name()) > -1 &&
+      JsTests.testFrame[0].contentWindow.location.pathname === path) return false;
+
+    var frame = new JsTests.Frame();
+    JsTests.Frame().onLoad(frame.initialize(path), callback);
+    return true;
+  };
+
+  var setReferenceToTestFrame = function() {
+    JsTests.testFrame = $(JsTests.Selectors.testFrame);
+  };
+
+  var setAuthenticationState = function(authenticated, path, callback) {
+    JsTests.Authentication(authenticated, path).init(callback);
+  };
+
   var initialize = function (options) {
     var callback = options.callback,
       path = options.path ? options.path : "";
 
-    JsTests.testFrame = $(JsTests.Selectors.testFrame);
+    setReferenceToTestFrame();
 
-    var authentication = new JsTests.Authentication(options.authenticated, path);
-    authentication.init(callback);
+    setAuthenticationState(options.authenticated, path, callback);
 
-    if (JsTests.testFrame.length === 0 ||
-      JsTests.testFrame.attr("src").indexOf(JsTests.Host.name()) === -1 ||
-      JsTests.testFrame[0].contentWindow.location.pathname !== path) {
-      var frame = new JsTests.Frame();
-      JsTests.Frame().onLoad(frame.initialize(path), callback);
-    } else {
-      callback && callback();
-    }
+    if (tryBindingFrameOnLoad(path, callback)) return;
+
+    callback && callback();
   };
 
   var initialized = function () {
