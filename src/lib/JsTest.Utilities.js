@@ -1,9 +1,9 @@
 ﻿/* ******************************
-Author: James Speaker
-Copyright 2014-2016, iOnTech
+Author: Jim Speaker
+Copyright 2014-2017, iOnTech
 james@iontech.org
 
-Copyright (c) 2016 Jim Speaker
+Copyright (c) 2014-2017 Jim Speaker
 
 MIT License
 
@@ -34,26 +34,6 @@ JsTests.Selectors = {
   testFrameContainer: "#test-fixture",
   testFrame: "#test-fixture iframe"
 };
-
-JsTests.Host = (function () {
-  var hostName;
-
-  var name = function () {
-    if (hostName) {
-      return hostName;
-    }
-
-    hostName = location.search.getQueryValue("host");
-    if (!hostName) {
-      hostName = location.host;
-    }
-    return hostName;
-  }
-
-  return {
-    name: name
-  };
-})();
 
 JsTests.Fixture = (function () {
   // ReSharper disable CallerCalleeUsing
@@ -108,6 +88,7 @@ JsTests.Authentication = function (authenticated, path) {
   }
   // ReSharper restore CallerCalleeUsing
 
+  var self = this;
   this.authenticated = authenticated;
   this.path = path;
 
@@ -117,34 +98,52 @@ JsTests.Authentication = function (authenticated, path) {
       JsTests.testFrame[0].contentWindow.location.pathname !== path);
   };
 
-  var init = function (callback) {
-    var framedAuthentication = JsTests.Configuration.framedAuthentication ? true : false;
+  var tryLoginExistingFrame = function (callback) {
+    if (!self.authenticated || !requestedFrameExists()) return false;
+
+    JsTests.Account().login(callback);
+    return true;
+  };
+
+  var tryLoginNonExistentFrame = function (callback) {
+    if (!self.authenticated || requestedFrameExists()) return false;
+
     var frame = new JsTests.Frame();
+    JsTests.Account().login(function () {
+      JsTests.Frame().onLoad(frame.initialize(self.path), callback);
+    });
+    return true;
+  };
 
-    if (authenticated) {
-      if (!requestedFrameExists()) {
-        JsTests.Account().login(function () {
-          JsTests.Frame().onLoad(frame.initialize(path), callback);
-        });
-      } else {
-        JsTests.Account().login(callback);
-      }
-      return;
-    }
+  var tryLogoutNestedAuthenticationFrame = function (callback) {
+    var framedAuthentication = JsTests.Configuration.framedAuthentication ? true : false;
+    if (self.authenticated === undefined || self.authenticated === true || !framedAuthentication) return false;
 
-    if (authenticated !== undefined && authenticated === false) {
-      if (framedAuthentication) {
-        JsTests.Frame().onLoad(frame.initialize(path), function () {
-          JsTests.Account().logout(callback);
-        });
-        return;
-      }
+    var frame = new JsTests.Frame();
+    JsTests.Frame().onLoad(frame.initialize(path), function () {
+      JsTests.Account().logout(callback);
+    });
+    return true;
+  };
 
-      JsTests.Account().logout(function () {
-        JsTests.Frame().onLoad(frame.initialize(path), callback);
-      });
-      return;
-    }
+  var tryLogout = function (callback) {
+    if (self.authenticated === undefined || self.authenticated === true) return false;
+
+    var frame = new JsTests.Frame();
+    JsTests.Account().logout(function () {
+      JsTests.Frame().onLoad(frame.initialize(path), callback);
+    });
+    return true;
+  };
+
+  var init = function (callback) {
+    if (tryLoginExistingFrame(callback)) return;
+
+    if (tryLoginNonExistentFrame(callback)) return;
+
+    if (tryLogoutNestedAuthenticationFrame(callback)) return;
+
+    if (tryLogout(callback)) return;
   };
 
   return {
@@ -163,10 +162,12 @@ JsTests.Frame = function () {
     JsTests.testFrame = $(JsTests.Selectors.testFrame);
     $(JsTests.Selectors.testFrame).one("load", function () {
       var frameDocument = JsTests.testFrame && JsTests.testFrame.length > 0 ? JsTests.testFrame[0].contentWindow : null;
+
       if (!frameDocument) {
         callback && callback();
         return;
       }
+
       $(frameDocument).ready(function () {
         callback && callback();
       });
@@ -216,6 +217,26 @@ JsTests.Wait = (function () {
     until: until
   };
 });
+
+JsTests.Host = (function () {
+  var hostName;
+
+  var name = function () {
+    if (hostName) {
+      return hostName;
+    }
+
+    hostName = location.search.getQueryValue("host");
+    if (!hostName) {
+      hostName = location.host;
+    }
+    return hostName;
+  }
+
+  return {
+    name: name
+  };
+})();
 
 JsTests.verbosity = 2; // 0 error, 1 warning, 2 information
 JsTests.Console = (function () {
@@ -330,12 +351,13 @@ JsTests.PathUtilityFactory = function (path) {
   }
   // ReSharper restore CallerCalleeUsing
 
+  var self = this;
   this.path = path;
 
   var create = function () {
-    if (window.location.protocol.indexOf("http") === 0) return new JsTests.UrlPathUtlility(path);
+    if (window.location.protocol.indexOf("http") === 0) return new JsTests.UrlPathUtlility(self.path);
 
-    if (window.location.protocol.indexOf("file") === 0) return new JsTests.FilePathUtility(path);
+    if (window.location.protocol.indexOf("file") === 0) return new JsTests.FilePathUtility(self.path);
 
     throw new Error("PathUtilityFactory could not resolve strategy.");
   };
@@ -352,10 +374,11 @@ JsTests.UrlPathUtlility = function (path) {
   }
   // ReSharper restore CallerCalleeUsing
 
+  var self = this;
   this.path = path;
 
   var fullyQualified = function () {
-    return window.location.protocol + "//" + JsTests.Host.name() + path;
+    return window.location.protocol + "//" + JsTests.Host.name() + self.path;
   };
 
   return {
@@ -370,10 +393,11 @@ JsTests.FilePathUtility = function (path) {
   }
   // ReSharper restore CallerCalleeUsing
 
+  var self = this;
   this.path = path;
 
   var fullyQualified = function () {
-    return window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/")) + path;
+    return window.location.pathname.substr(0, window.location.pathname.lastIndexOf("/")) + self.path;
   };
 
   return {
